@@ -27,7 +27,7 @@ func filterOutHLSParams(rawQuery string) string {
 	if rawQuery != "" {
 		if q, err := url.ParseQuery(rawQuery); err == nil {
 			for k := range q {
-				if strings.HasPrefix(k, "_HLS_") {
+				if strings.HasPrefix(k, "_HLS_") || strings.HasPrefix(k, "protocol") {
 					delete(q, k)
 				}
 			}
@@ -297,10 +297,11 @@ func (s *muxerStream) handleMediaPlaylist(w http.ResponseWriter, r *http.Request
 	msn := queryVal(q, "_HLS_msn")
 	part := queryVal(q, "_HLS_part")
 	skip := queryVal(q, "_HLS_skip")
+	isLowLatency := queryVal(q, "protocol") == "llhls"
 
 	isDeltaUpdate := false
 
-	if s.variant == MuxerVariantLowLatency {
+	if isLowLatency && s.variant == MuxerVariantLowLatency {
 		isDeltaUpdate = skip == "YES" || skip == "v2"
 
 		msnint, partint, err := parseMSNPart(msn, part)
@@ -435,6 +436,7 @@ func (s *muxerStream) generateMediaPlaylistFMP4(
 	rawQuery string,
 ) ([]byte, error) {
 	skipBoundary := time.Duration(s.targetDuration) * 6 * time.Second
+	isLowLatency := rawQuery != "" && strings.Contains(rawQuery, "protocol=llhls")
 	rawQuery = filterOutHLSParams(rawQuery)
 
 	pl := &playlist.Media{
@@ -443,7 +445,7 @@ func (s *muxerStream) generateMediaPlaylistFMP4(
 		MediaSequence:  s.segmentDeleteCount,
 	}
 
-	if s.variant == MuxerVariantLowLatency {
+	if isLowLatency && s.variant == MuxerVariantLowLatency {
 		partHoldBack := (s.partTargetDuration * 25) / 10
 
 		pl.ServerControl = &playlist.MediaServerControl{
@@ -506,7 +508,7 @@ func (s *muxerStream) generateMediaPlaylistFMP4(
 				plse.DateTime = &seg.startNTP
 			}
 
-			if s.variant == MuxerVariantLowLatency && (len(s.segments)-i) <= 2 {
+			if isLowLatency && s.variant == MuxerVariantLowLatency && (len(s.segments)-i) <= 2 {
 				for _, part := range seg.parts {
 					u = part.path
 					if rawQuery != "" {
@@ -532,7 +534,7 @@ func (s *muxerStream) generateMediaPlaylistFMP4(
 		}
 	}
 
-	if s.variant == MuxerVariantLowLatency {
+	if isLowLatency && s.variant == MuxerVariantLowLatency {
 		for _, part := range s.nextSegment.(*muxerSegmentFMP4).parts {
 			u := part.path
 			if rawQuery != "" {
