@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/bluenviron/gohlslib/v2/services"
 	"github.com/bluenviron/gohlslib/v2/pkg/codecs"
 	"github.com/bluenviron/gohlslib/v2/pkg/playlist"
 	"github.com/bluenviron/gohlslib/v2/pkg/storage"
@@ -205,7 +206,7 @@ type Muxer struct {
 }
 
 // Start initializes the muxer.
-func (m *Muxer) Start() error {
+func (m *Muxer) Start(repo services.LiveStreamStatisticRepository, streamKey string) error {
 	if m.Variant == 0 {
 		m.Variant = MuxerVariantLowLatency
 	}
@@ -226,6 +227,8 @@ func (m *Muxer) Start() error {
 			log.Printf("%v", e)
 		}
 	}
+
+	services.NewStatisticService(repo)
 
 	if len(m.Tracks) == 0 {
 		return fmt.Errorf("at least one track must be provided")
@@ -353,6 +356,7 @@ func (m *Muxer) Start() error {
 			tracks:         m.mtracks,
 			id:             "main",
 			nextSegmentID:  nextSegmentID,
+			streamIDPath:   streamKey,
 		}
 		stream.initialize()
 		m.streams = append(m.streams, stream)
@@ -407,6 +411,7 @@ func (m *Muxer) Start() error {
 				language:       track.Language,
 				isDefault:      isDefault,
 				nextSegmentID:  nextSegmentID,
+				streamIDPath:   streamKey,
 			}
 			stream.initialize()
 			m.streams = append(m.streams, stream)
