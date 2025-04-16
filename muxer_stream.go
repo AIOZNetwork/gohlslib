@@ -758,10 +758,9 @@ func (s *muxerStream) CalculateBitrateFramerateAndSave(segment muxerSegment) err
 		filesize := segment.getSize()
 		bytes := filesize / uint64(math.Round(duration))
 		bitrate := float64(bytes) * 0.008 // convert to bitrate with kbs
-
 		var frameRate int16
-		track := s.tracks[0]
 		
+		track := s.tracks[0]
 		if track == nil {
 			return fmt.Errorf("track not found")
 		}
@@ -778,7 +777,6 @@ func (s *muxerStream) CalculateBitrateFramerateAndSave(segment muxerSegment) err
 			if f != 0 {
 				frameRate = int16(f)
 			}
-
 		case *codecs.H264:
 			var sps h264.SPS
 			err := sps.Unmarshal(codec.SPS)
@@ -799,7 +797,7 @@ func (s *muxerStream) CalculateBitrateFramerateAndSave(segment muxerSegment) err
 
 		services.LiveStreamStatisticService.UpsertBitrateOut(uuid, bitrate)
 		services.LiveStreamStatisticService.UpsertFPSOut(uuid, frameRate)
-		services.LiveStreamStatisticService.UpsertDataTransferred(uuid, float64(filesize) / 1e6) // convert to MB
+		services.LiveStreamStatisticService.UpsertDataTransferred(uuid, float64(filesize)/1e6) // convert to MB
 	}
 	return nil
 }

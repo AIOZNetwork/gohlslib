@@ -12,10 +12,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bluenviron/gohlslib/v2/services"
 	"github.com/bluenviron/gohlslib/v2/pkg/codecs"
 	"github.com/bluenviron/gohlslib/v2/pkg/playlist"
 	"github.com/bluenviron/gohlslib/v2/pkg/storage"
+	"github.com/bluenviron/gohlslib/v2/services"
 )
 
 const (

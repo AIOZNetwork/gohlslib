@@ -15,17 +15,16 @@ func NewStatisticService(repo LiveStreamStatisticRepository) {
 }
 
 type LiveStreamStatisticRepository interface {
-  UpsertBitrateIn(stream_key uuid.UUID, bitrate float64) error
-  UpsertBitrateOut(stream_key uuid.UUID, bitrate float64) error
-  UpsertFPSIn(stream_key uuid.UUID, fps int16) error
-  UpsertFPSOut(stream_key uuid.UUID, fps int16) error
-  UpsertNumberOfRequests(stream_key uuid.UUID, number_of_requests int) error
-  UpsertDataTransferred(stream_key uuid.UUID, data_transferred float64) error
-  UpsertDevice(stream_key uuid.UUID, device string) error
-  UpsertOS(stream_key uuid.UUID, os string) error
-  UpsertLocation(stream_key uuid.UUID, location string) error
+	UpsertBitrateIn(stream_key uuid.UUID, bitrate float64) error
+	UpsertBitrateOut(stream_key uuid.UUID, bitrate float64) error
+	UpsertFPSIn(stream_key uuid.UUID, fps int16) error
+	UpsertFPSOut(stream_key uuid.UUID, fps int16) error
+	UpsertNumberOfRequests(stream_key uuid.UUID, number_of_requests int) error
+	UpsertDataTransferred(stream_key uuid.UUID, data_transferred float64) error
+	UpsertDevice(stream_key uuid.UUID, device string) error
+	UpsertOS(stream_key uuid.UUID, os string) error
+	UpsertLocation(stream_key uuid.UUID, location string) error
 }
-
 
 func (s *StatisticService) UpsertBitrateOut(stream_key uuid.UUID, bitrate float64) error {
 	return s.livestreamStatisticRepo.UpsertBitrateOut(stream_key, bitrate)
@@ -39,5 +38,5 @@ func (s *StatisticService) UpsertFPSOut(stream_key uuid.UUID, fps int16) error {
 }
 
 func (s *StatisticService) UpsertFPSIn(stream_key uuid.UUID, fps int16) error {
-  return s.livestreamStatisticRepo.UpsertFPSIn(stream_key, fps)
+	return s.livestreamStatisticRepo.UpsertFPSIn(stream_key, fps)
 }
