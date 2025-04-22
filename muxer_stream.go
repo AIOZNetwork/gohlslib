@@ -15,12 +15,14 @@ import (
 	"github.com/bluenviron/gohlslib/v2/pkg/codecs"
 	"github.com/bluenviron/gohlslib/v2/pkg/playlist"
 	"github.com/bluenviron/gohlslib/v2/pkg/storage"
+	"github.com/bluenviron/gohlslib/v2/services"
 	"github.com/bluenviron/mediacommon/v2/pkg/codecs/av1"
 	"github.com/bluenviron/mediacommon/v2/pkg/codecs/h264"
 	"github.com/bluenviron/mediacommon/v2/pkg/codecs/h265"
 	"github.com/bluenviron/mediacommon/v2/pkg/formats/fmp4"
 	"github.com/bluenviron/mediacommon/v2/pkg/formats/fmp4/seekablebuffer"
 	"github.com/bluenviron/mediacommon/v2/pkg/formats/mpegts"
+	"github.com/google/uuid"
 )
 
 func filterOutHLSParams(rawQuery string) string {
@@ -113,6 +115,7 @@ type muxerStream struct {
 	isDefault      bool
 	nextSegmentID  uint64
 	nextPartID     uint64
+	streamIDPath   string
 
 	generateMediaPlaylist  generateMediaPlaylistFunc
 	mpegtsSwitchableWriter *switchableWriter // mpegts only
@@ -749,6 +752,56 @@ func (s *muxerStream) rotateParts(
 	return nil
 }
 
+func (s *muxerStream) CalculateBitrateFramerateAndSave(segment muxerSegment) error {
+	if s.id == "video1" {
+		duration := segment.getDuration().Seconds()
+		filesize := segment.getSize()
+		bytes := filesize / uint64(math.Round(duration))
+		bitrate := float64(bytes) * 0.008 // convert to bitrate with kbs
+		var frameRate int16
+		
+		track := s.tracks[0]
+		if track == nil {
+			return fmt.Errorf("track not found")
+		}
+
+		switch codec := track.Codec.(type) {
+		case *codecs.H265:
+			var sps h265.SPS
+			err := sps.Unmarshal(codec.SPS)
+			if err != nil {
+				return err
+			}
+
+			f := sps.FPS()
+			if f != 0 {
+				frameRate = int16(f)
+			}
+		case *codecs.H264:
+			var sps h264.SPS
+			err := sps.Unmarshal(codec.SPS)
+			if err != nil {
+				return err
+			}
+
+			f := sps.FPS()
+			if f != 0 {
+				frameRate = int16(f)
+			}
+		}
+
+		uuid, err := uuid.Parse(s.streamIDPath)
+		if err != nil {
+			return err
+		}
+
+		services.LiveStreamStatisticService.UpsertBitrateOut(uuid, bitrate)
+		services.LiveStreamStatisticService.UpsertFPSOut(uuid, frameRate)
+		services.LiveStreamStatisticService.UpsertDataTransferred(uuid, float64(filesize)/1e6) // convert to MB
+	}
+	return nil
+}
+
 func (s *muxerStream) rotateSegments(
 	nextDTS time.Duration,
 	nextNTP time.Time,
@@ -779,6 +832,12 @@ func (s *muxerStream) rotateSegments(
 				duration: segment.getDuration(),
 			})
 		}
+	}
+
+	//calculate bitrate and frame rate
+	err = s.CalculateBitrateFramerateAndSave(segment)
+	if err != nil {
+		fmt.Println("calculate bitrate and frame rate error: %v", err)
 	}
 
 	s.segments = append(s.segments, segment)
