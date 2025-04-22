@@ -206,7 +206,7 @@ type Muxer struct {
 }
 
 // Start initializes the muxer.
-func (m *Muxer) Start(repo services.LiveStreamStatisticRepository, streamKey string) error {
+func (m *Muxer) Start(repo services.LiveStreamStatisticRepository, pathName string) error {
 	if m.Variant == 0 {
 		m.Variant = MuxerVariantLowLatency
 	}
@@ -356,7 +356,7 @@ func (m *Muxer) Start(repo services.LiveStreamStatisticRepository, streamKey str
 			tracks:         m.mtracks,
 			id:             "main",
 			nextSegmentID:  nextSegmentID,
-			streamIDPath:   streamKey,
+			streamIDPath:   pathName,
 		}
 		stream.initialize()
 		m.streams = append(m.streams, stream)
@@ -411,7 +411,7 @@ func (m *Muxer) Start(repo services.LiveStreamStatisticRepository, streamKey str
 				language:       track.Language,
 				isDefault:      isDefault,
 				nextSegmentID:  nextSegmentID,
-				streamIDPath:   streamKey,
+				streamIDPath:   pathName,
 			}
 			stream.initialize()
 			m.streams = append(m.streams, stream)
