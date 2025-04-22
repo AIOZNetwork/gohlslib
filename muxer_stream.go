@@ -835,7 +835,10 @@ func (s *muxerStream) rotateSegments(
 	}
 
 	//calculate bitrate and frame rate
-	_ = s.CalculateBitrateFramerateAndSave(segment)
+	err = s.CalculateBitrateFramerateAndSave(segment)
+	if err != nil {
+		fmt.Println("calculate bitrate and frame rate error: %v", err)
+	}
 
 	s.segments = append(s.segments, segment)
 
