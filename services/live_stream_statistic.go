@@ -21,9 +21,6 @@ type LiveStreamStatisticRepository interface {
 	UpsertFPSOut(streamKey uuid.UUID, fps int16) error
 	UpsertNumberOfRequests(streamKey uuid.UUID, numberOfRequests int) error
 	UpsertDataTransferred(streamKey uuid.UUID, dataTransferred float64) error
-	UpsertDevice(streamKey uuid.UUID, device string) error
-	UpsertOS(streamKey uuid.UUID, os string) error
-	UpsertLocation(streamKey uuid.UUID, location string) error
 }
 
 func (s *StatisticService) UpsertBitrateOut(streamKey uuid.UUID, bitrate float64) error {
