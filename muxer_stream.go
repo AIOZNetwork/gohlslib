@@ -755,6 +755,9 @@ func (s *muxerStream) rotateParts(
 func (s *muxerStream) CalculateBitrateFramerateAndSave(segment muxerSegment) error {
 	if s.id == "video1" {
 		duration := segment.getDuration().Seconds()
+		if duration == 0 {
+			duration = 1
+		}
 		filesize := segment.getSize()
 		bytes := filesize / uint64(math.Round(duration))
 		bitrate := float64(bytes) * 0.008 // convert to bitrate with kbs
