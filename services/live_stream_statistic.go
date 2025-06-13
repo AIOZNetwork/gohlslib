@@ -19,7 +19,6 @@ type LiveStreamStatisticRepository interface {
 	UpsertBitrateOut(streamKey uuid.UUID, bitrate float64) error
 	UpsertFPSIn(streamKey uuid.UUID, fps int16) error
 	UpsertFPSOut(streamKey uuid.UUID, fps int16) error
-	UpsertNumberOfRequests(streamKey uuid.UUID, numberOfRequests int) error
 	UpsertDataTransferred(streamKey uuid.UUID, dataTransferred float64) error
 }
 
