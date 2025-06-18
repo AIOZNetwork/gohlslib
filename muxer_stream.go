@@ -760,7 +760,7 @@ func (s *muxerStream) CalculateBitrateFramerateAndSave(segment muxerSegment) err
 		}
 		filesize := segment.getSize()
 		bytes := filesize / uint64(math.Round(duration))
-		bitrate := float64(bytes) * 0.008 // convert to bitrate with kbs
+		bitrate := float64(bytes) * 8
 		var frameRate int16
 		
 		track := s.tracks[0]
@@ -800,7 +800,7 @@ func (s *muxerStream) CalculateBitrateFramerateAndSave(segment muxerSegment) err
 
 		services.LiveStreamStatisticService.UpsertBitrateOut(uuid, bitrate)
 		services.LiveStreamStatisticService.UpsertFPSOut(uuid, frameRate)
-		services.LiveStreamStatisticService.UpsertDataTransferred(uuid, float64(filesize)/1e6) // convert to MB
+		services.LiveStreamStatisticService.UpsertDataTransferred(uuid, float64(filesize))
 	}
 	return nil
 }
